@@ -50,4 +50,32 @@ class CopelandGalaiCalc:
     
 
     def bid_ask_exponential_distribuition(self, lam:float=0.5, pi:float=0.3):
-        pass
+        
+        E_V = 1 / lam
+
+        def expected_profit(S):
+            a = E_V + S / 2
+            b = E_V - S / 2
+
+            E_V_gt_a = a + (1 / lam)
+            E_V_lt_b = (1 / lam) - (b * np.exp(-lam * b)) / (1 - np.exp(-lam * b))
+
+            profit_ask = (1 - pi)*(a - E_V) + pi*(a - E_V_gt_a)
+            profit_bid = (1 - pi)*(E_V - b) + pi*(E_V_lt_b - b)
+
+            expected_profit = 0.5 * (profit_ask + profit_bid)
+            return expected_profit
+
+        # Resolver el spread de equilibrio (donde beneficio esperado = 0)
+        initial_guess = 1.0
+        spread_equilibrium = fsolve(expected_profit, initial_guess)[0]
+
+        # Calcular precios de bid y ask
+        ask = E_V + spread_equilibrium / 2
+        bid = E_V - spread_equilibrium / 2
+
+        print(f"Spread de equilibrio: {spread_equilibrium:.4f}")
+        print(f"Precio Ask: {ask:.4f}")
+        print(f"Precio Bid: {bid:.4f}")
+
+        return (bid, ask)
